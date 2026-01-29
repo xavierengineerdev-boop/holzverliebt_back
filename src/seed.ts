@@ -138,38 +138,42 @@ async function seed() {
     console.log('✅ Старые товары удалены\n');
 
     const product = {
-      name: 'Derila Ergo Pillow',
-      description: 'Ортопедическая подушка для здорового сна',
-      shortDescription: 'Комфортная ортопедическая подушка',
+      name: 'Sinnespaneele mit Himmelsmotiven Großes 6-teiliges Aktivitätsbrett für Kinder',
+      description: 'Eine personalisierte Sofa-Bar bzw. Snack-Box für gemütliche Abende. Er bietet Platz für Snacks, Getränke und kleine Alltagsdinge wie Fernbedienung, Taschentücher oder Smartphone – ideal für Abende zu zweit oder mit Freunden.',
+      shortDescription: 'Eine Snackbar für gemütliche Abende',
       price: {
-        current: 190.99,
-        old: 289.99,
+        current: 409.99,
+        old: 829.99,
         currency: 'zł',
       },
-      sku: 'PILLOW-001',
+      sku: 'SNACK-001',
       stock: 100,
       attributes: [
-        { name: 'Материал', value: 'Memory foam' },
-        { name: 'Размер', value: '54x36 см' },
-        { name: 'Вес', value: '1.2 кг' },
-        { name: 'Жесткость', value: 'Средняя' },
+        { name: 'Materialien', value: 'Bambus, Metall, Kork' },
+        { name: 'Abmessungen', value: '40 x 27 x 7,5 cm' },
+        { name: 'Montageart', value: 'Wandmontage / Freistehend' },
+        { name: 'Satz (Lieferumfang)', value: 'Das Paket beinhaltet zwei Edelstahlschüsseln und Korkdeckel' },
+        { name: 'Pflegehinweis', value: 'Schüsseln spülmaschinenfest / Gestell feucht abwischen' },
       ],
       images: [
         {
-          url: '/Pod-1.svg',
-          alt: 'Derila Ergo Pillow',
+          url: '/assets/icons/Pod-1.svg',
+          alt: 'Sinnespaneele mit Himmelsmotiven',
           order: 0,
           isMain: true,
         },
       ],
-      rating: 4.8,
+      rating: 5.0,
       reviewsCount: 22,
+      isOnSale: true,
+      isFeatured: true,
     };
 
     const createdProduct = await productsService.create(product);
-    console.log('✅ Товар создан: Derila Ergo Pillow');
-    console.log('   Цена: $' + createdProduct.price.current);
-    console.log('   Была: $' + createdProduct.price.old);
+    console.log('✅ Товар создан: Sinnespaneele mit Himmelsmotiven');
+    console.log('   SKU: ' + createdProduct.sku);
+    console.log('   Цена: ' + createdProduct.price.current + ' ' + createdProduct.price.currency);
+    console.log('   Была: ' + createdProduct.price.old + ' ' + createdProduct.price.currency);
 
     console.log('\n📦 Все товары в БД:\n');
     const allProducts = await productsService.findAll(true);
