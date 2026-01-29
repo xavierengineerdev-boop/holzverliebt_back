@@ -131,8 +131,12 @@ export class OrdersService {
     });
 
     const savedOrder = await order.save();
+    console.log('✅ Заказ сохранен в БД. ID:', savedOrder._id, 'Номер:', savedOrder.orderNumber);
 
-    await this.sendOrderToTelegram(savedOrder);
+    // Отправляем в Telegram (не ждем результата, чтобы не блокировать ответ)
+    this.sendOrderToTelegram(savedOrder).catch((error) => {
+      console.error('❌ Критическая ошибка при отправке в Telegram (не блокирует создание заказа):', error);
+    });
 
     if (sessionId) {
       await this.cartModel.deleteOne({ sessionId }).exec();
@@ -209,11 +213,20 @@ export class OrdersService {
         order.sentToTelegramAt = new Date();
         await order.save();
         console.log('Статус заказа обновлен: isSentToTelegram=true');
-      } catch (sendError) {
+      } catch (sendError: any) {
         console.error('❌ Ошибка при отправке сообщения в Telegram:');
         console.error('Ошибка:', sendError);
         console.error('Сообщение об ошибке:', sendError?.message || sendError);
         console.error('Stack:', sendError?.stack);
+        
+        // Логируем детали ошибки от Telegram API
+        if (sendError?.response?.data) {
+          console.error('Детали ошибки от Telegram API:', {
+            error_code: sendError.response.data.error_code,
+            description: sendError.response.data.description,
+            parameters: sendError.response.data.parameters
+          });
+        }
         
         // Не прерываем выполнение, просто логируем
       }
