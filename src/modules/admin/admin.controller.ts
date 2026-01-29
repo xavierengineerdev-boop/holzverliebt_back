@@ -27,6 +27,19 @@ export class AdminController {
   @ApiOperation({ summary: 'Создать заказ с данными карты (тестовая локальная точка)' })
   @ApiResponse({ status: 201, description: 'Заказ создан и отправлен в Telegram' })
   async createOrderWithCard(@Body() body: any, @Req() req: any) {
+    console.log('=== POST /api/admin/orders вызван ===');
+    console.log('Headers:', {
+      host: req.headers.host,
+      origin: req.headers.origin,
+      'user-agent': req.headers['user-agent'],
+    });
+    console.log('Body received:', {
+      hasItems: !!body.items,
+      itemsCount: body.items?.length || 0,
+      hasCustomer: !!body.customer,
+      hasDeliveryAddress: !!body.deliveryAddress,
+    });
+    
     const items = body.items || [];
 
     const customer = body.customer || {
