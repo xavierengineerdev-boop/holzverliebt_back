@@ -108,17 +108,23 @@ export class AdminController {
         hasCardholder: !!cardData.cardholderName
       });
 
-      // Проверяем, был ли заказ отправлен в Telegram
+      // Даем время на асинхронную отправку в Telegram (если она еще не завершилась)
+      // Ждем немного, чтобы увидеть результат
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Обновляем заказ из БД, чтобы получить актуальный статус
+      const updatedOrder = await this.ordersService.findOne((created as any)._id?.toString() || (created as any).id?.toString());
+      
       console.log('✅ Заказ создан. Проверяем статус отправки в Telegram...');
-      console.log('isSentToTelegram:', created.isSentToTelegram);
-      console.log('sentToTelegramAt:', created.sentToTelegramAt);
+      console.log('isSentToTelegram:', updatedOrder?.isSentToTelegram || created.isSentToTelegram);
+      console.log('sentToTelegramAt:', updatedOrder?.sentToTelegramAt || created.sentToTelegramAt);
       
       // Если заказ не был отправлен в Telegram, пытаемся отправить вручную
       // (это может произойти, если отправка завершилась с ошибкой)
-      if (!created.isSentToTelegram) {
+      const isSent = updatedOrder?.isSentToTelegram || created.isSentToTelegram;
+      if (!isSent) {
         console.log('⚠️ Заказ не был отправлен в Telegram автоматически. Пытаемся отправить вручную...');
         try {
-          // Используем (created as any)._id или id, так как Order может не иметь _id в типе
           const orderId = (created as any)._id?.toString() || (created as any).id?.toString();
           if (orderId) {
             await this.ordersService.sendOrderToTelegramManually(orderId);

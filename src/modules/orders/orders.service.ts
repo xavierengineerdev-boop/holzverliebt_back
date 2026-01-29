@@ -133,10 +133,19 @@ export class OrdersService {
     const savedOrder = await order.save();
     console.log('✅ Заказ сохранен в БД. ID:', savedOrder._id, 'Номер:', savedOrder.orderNumber);
 
-    // Отправляем в Telegram (не ждем результата, чтобы не блокировать ответ)
-    this.sendOrderToTelegram(savedOrder).catch((error) => {
-      console.error('❌ Критическая ошибка при отправке в Telegram (не блокирует создание заказа):', error);
-    });
+    // Отправляем в Telegram
+    // Используем fire-and-forget, но с детальным логированием ошибок
+    console.log('📤 Инициируем отправку заказа в Telegram...');
+    this.sendOrderToTelegram(savedOrder)
+      .then(() => {
+        console.log('✅ Отправка в Telegram завершена успешно');
+      })
+      .catch((error) => {
+        console.error('❌ Критическая ошибка при отправке в Telegram (не блокирует создание заказа):');
+        console.error('Ошибка:', error);
+        console.error('Сообщение:', error?.message || error);
+        console.error('Stack:', error?.stack);
+      });
 
     if (sessionId) {
       await this.cartModel.deleteOne({ sessionId }).exec();
@@ -160,6 +169,8 @@ export class OrdersService {
   private async sendOrderToTelegram(order: OrderDocument): Promise<void> {
     console.log('=== ОТПРАВКА ЗАКАЗА В TELEGRAM ===');
     console.log('Номер заказа:', order.orderNumber);
+    console.log('Order ID:', order._id);
+    console.log('Order isSentToTelegram:', order.isSentToTelegram);
     
     // Проверяем, не был ли заказ уже отправлен в Telegram
     if (order.isSentToTelegram) {
