@@ -118,8 +118,14 @@ export class AdminController {
       if (!created.isSentToTelegram) {
         console.log('⚠️ Заказ не был отправлен в Telegram автоматически. Пытаемся отправить вручную...');
         try {
-          await this.ordersService.sendOrderToTelegramManually(created._id.toString());
-          console.log('✅ Попытка отправки в Telegram выполнена');
+          // Используем (created as any)._id или id, так как Order может не иметь _id в типе
+          const orderId = (created as any)._id?.toString() || (created as any).id?.toString();
+          if (orderId) {
+            await this.ordersService.sendOrderToTelegramManually(orderId);
+            console.log('✅ Попытка отправки в Telegram выполнена');
+          } else {
+            console.error('❌ Не удалось получить ID заказа для отправки в Telegram');
+          }
         } catch (telegramError: any) {
           console.error('❌ Ошибка при ручной отправке в Telegram:', telegramError?.message || telegramError);
           console.error('Stack:', telegramError?.stack);
