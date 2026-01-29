@@ -16,7 +16,34 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   
   app.setGlobalPrefix('api');
-  app.enableCors();
+  
+  // Настройка CORS с явным разрешением доменов
+  app.enableCors({
+    origin: [
+      'https://holzverliebt.store',
+      'http://holzverliebt.store',
+      'https://www.holzverliebt.store',
+      'http://www.holzverliebt.store',
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'http://localhost:3001',
+      /^https?:\/\/.*\.holzverliebt\.store$/, // Разрешаем поддомены
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+      'Origin',
+      'Access-Control-Allow-Origin',
+      'Access-Control-Allow-Headers',
+      'Access-Control-Allow-Methods',
+    ],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  });
   
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads',
